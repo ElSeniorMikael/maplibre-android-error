@@ -1,117 +1,168 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, {Fragment} from 'react';
+import MapLibreGL from '@maplibre/maplibre-react-native';
 import {
+  Platform,
+  Pressable,
   SafeAreaView,
-  ScrollView,
-  StatusBar,
+  // StatusBar,
   StyleSheet,
   Text,
-  useColorScheme,
+  // useColorScheme,
   View,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
+// import {Colors} from 'react-native/Libraries/NewAppScreen';
+// console.log('MAPLibre', MapLibreGL.setConnected);
+if (Platform.OS === 'android') {
+  // MapLibreGL.setAccessToken(null);
+  // MapLibreGL.setConnected(true);
 }
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+const laurentidesCities = [
+  {
+    name: 'rabaischocs - Saint-Jérôme',
+    slug: 'saint-jerome',
+    coordinates: [-74.0192, 45.7805],
+  },
+  {
+    name: 'rabaischocs - Mont-Tremblant',
+    slug: 'mont-tremblant',
+    coordinates: [-74.5841, 46.1186],
+  },
+  {
+    name: 'rabaischocs - Blainville',
+    slug: 'blainville',
+    coordinates: [-73.8849, 45.6736],
+  },
+  {
+    name: 'rabaischocs - Sainte-Agathe-des-Monts',
+    slug: 'sainte-agathe-des-monts',
+    coordinates: [-74.2822, 46.0483],
+  },
+  {
+    name: 'rabaischocs - Saint-Eustache',
+    slug: 'saint-eustache',
+    coordinates: [-73.9024, 45.5581],
+  },
+  {
+    name: 'rabaischocs - Lachute',
+    slug: 'lachute',
+    coordinates: [-74.3245, 45.6507],
+  },
+  {
+    name: 'rabaischocs - Mirabel',
+    slug: 'mirabel',
+    coordinates: [-74.0774, 45.6518],
+  },
+  {
+    name: 'rabaischocs - Sainte-Adèle',
+    slug: 'sainte-adele',
+    coordinates: [-74.1345, 45.9519],
+  },
+  {
+    name: 'rabaischocs - Boisbriand',
+    slug: 'boisbriand',
+    coordinates: [-73.8364, 45.6107],
+  },
+  {
+    name: 'rabaischocs - Deux-Montagnes',
+    slug: 'deux-montagnes',
+    coordinates: [-73.8921, 45.5339],
+  },
+];
+
+const Marker = (props: any) => {
+  // console.log('props', props);
+  const visibility = {
+    opacity: props.isSelected ? 1 : 0,
+    disply: props.isSelected ? 'flex' : 'none',
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
+    <Pressable onPress={props?.updateCurrentCoordinates} style={styles.marker}>
+      <View style={[styles.markerHeader, visibility]}>
+        <Text>Séléctionner</Text>
+        <Text style={{color: '#000'}}>{props.city.name}</Text>
+      </View>
+      <Icon name="map-marker" size={50} color="#900" />
+    </Pressable>
+  );
+};
+
+function App(): React.JSX.Element {
+  const [currentPosition, setCurrentPosition] = React.useState<
+    [number, number]
+  >([-73.9024, 45.5581]);
+
+  return (
+    <SafeAreaView style={styles.page}>
+      <Text>Map libre !!</Text>
+
+      <MapLibreGL.MapView
+        style={styles.map}
+        logoEnabled={false}
+        styleURL="https://tiles.openfreemap.org/styles/liberty">
+        <MapLibreGL.Camera
+          zoomLevel={14}
+          pitch={50}
+          centerCoordinate={currentPosition}
+        />
+
+        {laurentidesCities.map((city, i) => {
+          const updateCurrentCoordinates = () =>
+            setCurrentPosition(city.coordinates);
+
+          const isSelected = currentPosition.every(
+            (c, i) => c === city.coordinates[i],
+          );
+
+          return (
+            <MapLibreGL.MarkerView
+              id={city.slug}
+              key={i + city.slug + city.coordinates[0]}
+              coordinate={city.coordinates}
+              children={
+                <Marker
+                  city={city}
+                  updateCurrentCoordinates={updateCurrentCoordinates}
+                  isSelected={isSelected}
+                />
+              }
+            />
+          );
+        })}
+      </MapLibreGL.MapView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  map: {
+    flex: 1,
+    // width: '100%',
+    alignSelf: 'stretch',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  page: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5FCFF',
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  marker: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  highlight: {
-    fontWeight: '700',
+  markerHeader: {
+    maxWidth: 175,
+    padding: 6,
+    borderRadius: 4,
+    borderColor: 'rgb(255, 0, 0)',
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 1)',
   },
 });
 

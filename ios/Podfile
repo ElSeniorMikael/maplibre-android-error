@@ -36,5 +36,16 @@ target 'maplibre' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    $RCTMLN_SPM_Spec = {
+      url: "https://github.com/maplibre/maplibre-gl-native-distribution",
+      requirement: {
+        kind: "upToNextMajorVersion",
+        minimumVersion: "6.5.4"
+      },
+      product_name: "MapLibre"
+    }
+
+    $RCTMLN.post_install(installer)
   end
 end
